@@ -57,6 +57,8 @@ On a Mac with Xcode, plus `meson`, `ninja`, `pkg-config`, `python3`, `xcodegen`,
 
 That produces `build/Husk.ipa`. Later app-only rebuilds: `./scripts/package_ipa.sh` → `~/Desktop/Husk.ipa`.
 
+The same full build runs in GitHub Actions on `macos-26` (`.github/workflows/build.yml`): it installs `meson`, `qemu` and `xcodegen`, adds the `aarch64-apple-ios` Rust target, runs `ci_build.sh`, and uploads the signed-for-sideloading `.ipa`/`.tipa` as build artifacts. It runs on pushes to `main`, tags, pull requests and manually. The PS4 dylib is not part of this build; Husk's PS4 code is dormant and Android-only builds do not embed it.
+
 ## Licence
 
 GPL-2.0-or-later. Husk links QEMU (GPLv2), so the shipped binary is a combined GPLv2 work. It cannot go on the App Store. See [docs/01-licensing.md](docs/01-licensing.md).

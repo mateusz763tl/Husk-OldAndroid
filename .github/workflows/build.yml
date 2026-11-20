@@ -1,0 +1,80 @@
+name: Build Husk IPA
+
+# macOS 26 arm64 runners have Xcode 26 (with the iOS 26 SDK the JIT helper
+# needs), Rust, ninja, cmake and pkg-config preinstalled. Only meson, qemu-img
+# (for the qcow2 seeds) and xcodegen have to be added.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: husk-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 360
+    env:
+      # Keep DerivedData and the build log somewhere steps can upload later.
+      DD: ${{ runner.temp }}/husk_ipa
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          brew install meson qemu xcodegen
+          rustup target add aarch64-apple-ios
+          xcode-select -p
+          swift --version
+
+      - name: Cache downloaded dependency sources
+        uses: actions/cache@v4
+        with:
+          path: third_party/sources
+          key: husk-sources-${{ hashFiles('scripts/sources.sh', 'scripts/fetch_sources.sh') }}
+          restore-keys: husk-sources-
+
+      - name: Build everything and package the IPAs
+        run: ./scripts/ci_build.sh "$RUNNER_TEMP/Husk.ipa"
+
+      - name: checksums
+        run: shasum -a 256 "$RUNNER_TEMP/Husk.ipa" "$RUNNER_TEMP/Husk.tipa" | tee "$RUNNER_TEMP/SHA256SUMS.txt"
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: Husk-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/Husk.ipa
+            ${{ runner.temp }}/Husk.tipa
+            ${{ runner.temp }}/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: husk-build-log-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/husk_ipa/build.log
+            build/logs/**
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Husk build"
+            echo "- commit: \`${GITHUB_SHA}\`"
+            echo "- result: ${{ job.status }}"
+            echo "- installer: \`Husk-${GITHUB_SHA}.ipa\` (artifact)"
+          } >> "$GITHUB_STEP_SUMMARY"

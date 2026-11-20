@@ -19,9 +19,6 @@ jobs:
   build:
     runs-on: macos-26
     timeout-minutes: 360
-    env:
-      # Keep DerivedData and the build log somewhere steps can upload later.
-      DD: ${{ runner.temp }}/husk_ipa
     steps:
       - uses: actions/checkout@v4
 
@@ -40,6 +37,9 @@ jobs:
           restore-keys: husk-sources-
 
       - name: Build everything and package the IPAs
+        # `runner` is only available in step context, not job-level env.
+        env:
+          DD: ${{ runner.temp }}/husk_ipa
         run: ./scripts/ci_build.sh "$RUNNER_TEMP/Husk.ipa"
 
       - name: checksums

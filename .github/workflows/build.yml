@@ -3,11 +3,9 @@ name: Build Husk IPA
 # macOS 26 arm64 runners have Xcode 26 (with the iOS 26 SDK the JIT helper
 # needs), Rust, ninja, cmake and pkg-config preinstalled. Only meson, qemu-img
 # (for the qcow2 seeds) and xcodegen have to be added.
+# Manual only: a full build recompiles QEMU and can take an hour, which is
+# expensive on a private repo's macOS minutes. Run it from Actions → Run workflow.
 on:
-  push:
-    branches: [main]
-    tags: ['v*']
-  pull_request:
   workflow_dispatch:
 
 permissions:

@@ -114,14 +114,10 @@ struct ContentView: View {
             }
 
             if confirmAndroid {
-                ZStack {
-                    Color.black.opacity(0.55).ignoresSafeArea()
-                    AndroidStartWarning(
-                        onStart: { confirmAndroid = false; startFromLibrary() },
-                        onCancel: { confirmAndroid = false }
-                    )
-                }
-                .zIndex(20)
+                AndroidStartOverlay(
+                    onStart: { confirmAndroid = false; startFromLibrary() },
+                    onCancel: { confirmAndroid = false }
+                )
             }
 
         }
@@ -747,6 +743,21 @@ struct ControlsSheet: View {
         }
         .padding(.horizontal, 14).padding(.vertical, 12)
         .contentShape(Rectangle())
+    }
+}
+
+/// The dimming background and the warning, kept out of ContentView's body:
+/// a ZStack of these two views is enough to slow down type-checking there.
+private struct AndroidStartOverlay: View {
+    var onStart: () -> Void
+    var onCancel: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.55).ignoresSafeArea()
+            AndroidStartWarning(onStart: onStart, onCancel: onCancel)
+        }
+        .zIndex(20)
     }
 }
 

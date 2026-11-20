@@ -237,7 +237,7 @@ private struct MachineCard: View {
                     Text("\(machine.memorySpec) · \(machine.cpuSpec) · \(machine.displaySpec)")
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.textDim)
-                    StatusPill(status: status)
+                    MachineStatusPill(status: status)
                         .padding(.top, 3)
                 }
                 Spacer(minLength: 6)
@@ -294,7 +294,7 @@ private struct MachineCard: View {
     }
 }
 
-private struct StatusPill: View {
+private struct MachineStatusPill: View {
     let status: VMManager.MachineStatus
     var body: some View {
         HStack(spacing: 5) {

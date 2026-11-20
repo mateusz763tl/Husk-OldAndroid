@@ -109,7 +109,7 @@ struct ContentView: View {
                     .transition(.opacity)
                     .zIndex(3)
                     .onChange(of: host.isReady) { ready in
-                        if ready { withAnimation(.easeInOut(duration: 0.45)) { booting = false } }
+                        if ready { finishBoot() }
                     }
             }
 
@@ -268,6 +268,12 @@ struct ContentView: View {
     /// Every package Husk holds, from both sides: what the picture index is read for.
     private var showcasePackages: Set<String> {
         Set(tlStore.apps.compactMap(\.packageName) + host.packages.map(\.name))
+    }
+
+    /// The boot overlay is dismissed by several paths; keeping the animation
+    /// out of the view body keeps that body small enough for the type checker.
+    private func finishBoot() {
+        withAnimation(.easeInOut(duration: 0.45)) { booting = false }
     }
 
     private func evaluate() {

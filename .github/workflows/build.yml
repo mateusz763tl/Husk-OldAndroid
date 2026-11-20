@@ -29,6 +29,11 @@ jobs:
           xcode-select -p
           swift --version
 
+      - name: Python module needed by virglrenderer's meson checks
+        # The virgl tree's gallium meson.build asks for Python's yaml module,
+        # and meson hardcodes /opt/homebrew/bin/python3 on ARM runners.
+        run: /opt/homebrew/bin/python3 -m pip install --break-system-packages pyyaml
+
       - name: Cache downloaded dependency sources
         uses: actions/cache@v4
         with:
